@@ -1,21 +1,51 @@
-# Java AWS based Ecom Micrsoservice
+# App
 
-1. AWS Lamba for S3 Object Event Processing 
- provision AWS S3 and lambda for using IaC
- setup CICD to provision and deploy code
- Setup /cloud watch
+This project contains an AWS Lambda maven application with [AWS Java SDK 2.x](https://github.com/aws/aws-sdk-java-v2) dependencies.
 
-2. Read SQS message and Send Notification to SNS, enable Couldwatch
+## Prerequisites
+- Java 1.8+
+- Apache Maven
+- [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+- Docker
 
-   Create a Microservice that read SQS in Java code
-   Based on SQS Topic create a Notification
-   Enable Could Watch
+## Development
 
- EKS/ ECS deployable
+The generated function handler class just returns the input. The configured AWS Java SDK client is created in `DependencyFactory` class and you can 
+add the code to interact with the SDK client based on your use case.
 
- 3. Create A Integrated Microservice
-    Deployment Script
-    Cloudwatch Setup
-    Splunk 
-    Grafana Monitoring
-    Deployment Automation
+#### Building the project
+```
+mvn clean install
+```
+mvn compile dependency:copy-dependencies -DincludeScope=runtime
+
+build docker image 
+
+docker buildx build --platform linux/amd64 --provenance=false -t docker-image:test .
+
+#### Testing it locally
+```
+sam local invoke
+```
+docker run --platform linux/amd64 -p 9000:8080 docker-image:test
+
+#### Adding more SDK clients
+To add more service clients, you need to add the specific services modules in `pom.xml` and create the clients in `DependencyFactory` following the same 
+pattern as s3Client.
+
+## Deployment
+
+The generated project contains a default [SAM template](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html) file `template.yaml` where you can 
+configure different properties of your lambda function such as memory size and timeout. You might also need to add specific policies to the lambda function
+so that it can access other AWS resources.
+
+To deploy the application, you can run the following command:
+
+```
+sam deploy --guided
+```
+
+See [Deploying Serverless Applications](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-deploying.html) for more info.
+
+
+
